@@ -11,6 +11,7 @@ void args_push(lua_State *lua, const Arg &arg, const Args &... args) {
 
 template <typename Arg>
 void args_push(lua_State *lua, const Arg &arg) {
+  std::cout << &arg << std::endl;
   push(lua, arg);
 }
 

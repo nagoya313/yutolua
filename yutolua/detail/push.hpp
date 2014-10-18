@@ -6,7 +6,7 @@
 namespace yutolua { namespace detail {
 extern void *enabler;
 
-template <typename T, typename std::enable_if<std::is_same<T, bool>::value>::type *& = enabler>
+inline
 void push(lua_State *lua, bool value) {
   lua_pushboolean(lua, value);
 }
@@ -26,9 +26,9 @@ void push(lua_State *lua, T value) {
   lua_pushnumber(lua, value);
 }
 
-template <typename T, typename std::enable_if<std::is_same<T, std::string>::value>::type *& = enabler>
+inline
 void push(lua_State *lua, const std::string &value) {
-  lua_pushlstring(vm, value.data(), value.size());
+  lua_pushlstring(lua, value.data(), value.size());
 }
 }}
 
