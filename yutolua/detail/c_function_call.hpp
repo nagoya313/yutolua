@@ -32,7 +32,7 @@ struct c_function_call_args<1> {
 template <>
 struct c_function_call_args<0> {
   template <typename Func>
-  static void call(lua_State *lua, Func f) {
+  static void call(lua_State *, Func f) {
     f();
   }
 };

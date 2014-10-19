@@ -14,6 +14,18 @@ struct auto_pop : boost::noncopyable {
  private:
   lua_State *lua_;
 };
+
+struct auto_top : boost::noncopyable {
+  explicit auto_top(lua_State *lua) : lua_{lua}, top_{lua_gettop(lua_)} {}
+
+  ~auto_top() {
+    lua_settop(lua_, top_);
+  }
+
+ private:
+  lua_State *lua_;
+  int top_;
+};
 }}
 
 #endif

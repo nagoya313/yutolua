@@ -8,7 +8,8 @@
 namespace yutolua {
 template <typename Result, typename... Args>
 void define(const unique_state &lua, boost::string_ref identify, Result (*func)(Args...)) {
-  lua_pushlightuserdata(lua.get(), reinterpret_cast<void *>(func));
+  lua_pushcfunction(lua.get(), reinterpret_cast<lua_CFunction
+  >(func));
   lua_pushcclosure(lua.get(), detail::c_function<Result (Args...)>::call, 1);
   lua_setglobal(lua.get(), identify.data());
 }
