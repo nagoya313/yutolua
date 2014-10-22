@@ -1,5 +1,6 @@
 #ifndef YUTOLUA_DETAIL_COMPLEX_HPP_
 #define YUTOLUA_DETAIL_COMPLEX_HPP_
+#include <complex>
 #include <string>
 
 namespace yutolua { namespace detail {
@@ -129,6 +130,7 @@ inline void complex_initialize(lua_State *lua) {
   lua_pushcfunction(lua, undefined_complex_member);
   lua_setfield(lua, -2, "__index");
   lua_setmetatable(lua, -2);
+  luaL_ref(lua, LUA_REGISTRYINDEX);
   const luaL_Reg complex_lib[] = {
     {"new", new_complex<double>},
     {nullptr, nullptr}

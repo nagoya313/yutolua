@@ -3,43 +3,43 @@
 #include "arg_check.hpp"
 
 namespace yutolua { namespace detail {
-template <int N>
-struct c_function_call_args {
-  template <typename Func, typename Arg, typename... Args>
-  static void call(lua_State *lua, Func f, const Args &... args) {
-    c_function_call_args<N - 1>::template call<Func, Args...>(lua, f, arg_check<Arg>(lua, N), args...);
+template <int Cur, int Size, bool End, typename... Args>
+struct c_function_call_impl {
+  template <typename Result, typename Arg, typename... Args2, typename... Args3>
+  static Result call(lua_State *lua, Result (*f)(Args...), Args3... args) {
+    return c_function_call_impl<Cur + 1, Size, (Cur + 1 == Size), Args...>::template call<Result, Args2...>(lua, f, args..., arg_check<Arg>(lua, Cur));
   }
 
-  template <typename Func, typename Arg, typename... Args>
-  static void call(lua_State *lua, Func f) {
-    c_function_call_args<N - 1>::template call<Func, Args...>(lua, f, arg_check<Arg>(lua, N));
-  }
-};
-
-template <>
-struct c_function_call_args<1> {
-  template <typename Func, typename Arg, typename... Args>
-  static void call(lua_State *lua, Func f, const Args &... args) {
-    f(arg_check<Arg>(lua, 1), args...);
-  }
-
-  template <typename Func, typename Arg>
-  static void call(lua_State *lua, Func f) {
-    f(arg_check<Arg>(lua, 1));
+  template <typename Result, typename Arg, typename... Args2>
+  static Result call(lua_State *lua, Result (*f)(Args...)) {
+    return c_function_call_impl<Cur + 1, Size, (Cur + 1 == Size), Args...>::template call<Result, Args2...>(lua, f, arg_check<Arg>(lua, Cur));
   }
 };
 
-template <>
-struct c_function_call_args<0> {
-  template <typename Func>
-  static void call(lua_State *, Func f) {
-    f();
+template <int Cur, int Size, typename... Args>
+struct c_function_call_impl<Cur, Size, true, Args...> {
+  template <typename Result, typename Arg, typename... Args2, typename... Args3>
+  static Result call(lua_State *lua, Result (*f)(Args...), Args3... args) {
+    return f(args..., arg_check<Arg>(lua, Cur));
+  }
+
+  template <typename Result, typename Arg>
+  static Result call(lua_State *lua, Result (*f)(Arg)) {
+    return f(arg_check<Arg>(lua, Cur));
   }
 };
 
-template <typename Func, typename... Args>
-void c_function_call(lua_State *lua, Func f) {
-  c_function_call_args<sizeof...(Args)>::template call<Func, Args...>(lua, f);
+template <typename... Args>
+struct c_function_call_impl<1, 0, false, Args...> {
+  template <typename Result>
+  static Result call(lua_State *lua, Result (*f)()) {
+    return f();
+  }
+};
+
+template <typename Result, typename... Args>
+Result c_function_call(lua_State *lua, Result (*f)(Args...)) {
+  return c_function_call_impl<1, sizeof...(Args), (1 == sizeof...(Args)), Args...>::template call<Result, Args...>(lua, f);
 }
 }}
 

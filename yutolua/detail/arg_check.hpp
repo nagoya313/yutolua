@@ -5,30 +5,33 @@
 #include "type_check.hpp"
 
 namespace yutolua { namespace detail {
-extern void *enabler;
-
-template <typename T, typename std::enable_if<std::is_same<T, bool>::value>::type *& = enabler>
-bool arg_check(lua_State *lua, int index) {
-  return luaL_checkinteger(lua, index) != 0; // luaL_checkboolean???
+template <typename T, match_bool<T> *& = enabler>
+inline bool arg_check(lua_State *lua, int index) {
+  return lua_toboolean(lua, index) != 0;
 }
 
-template <typename T, typename std::enable_if<std::is_signed<T>::value && !std::is_floating_point<T>::value>::type *& = enabler>
-T arg_check(lua_State *lua, int index) {
+template <typename T, match_signed_integral<T> *& = enabler>
+inline lua_Integer arg_check(lua_State *lua, int index) {
   return luaL_checkinteger(lua, index);
 }
 
-template <typename T, typename std::enable_if<std::is_unsigned<T>::value && !boost::is_same<T, bool>::value>::type *& = enabler>
-T arg_check(lua_State *lua, int index) {
+template <typename T, match_unsigned_integral<T> *& = enabler>
+inline lua_Unsigned arg_check(lua_State *lua, int index) {
   return luaL_checkunsigned(lua, index);
 }
 
-template <typename T, typename std::enable_if<std::is_floating_point<T>::value>::type *& = enabler>
-T arg_check(lua_State *lua, int index) {
+template <typename T, match_floating_point<T> *& = enabler>
+inline lua_Number arg_check(lua_State *lua, int index) {
   return luaL_checknumber(lua, index);
 }
 
-template <typename T, typename std::enable_if<std::is_same<T, std::string>::value || std::is_same<T, const std::string &>::value>::type *& = enabler>
-std::string arg_check(lua_State *lua, int index) {
+template <typename T, match_c_string<T> *& = enabler>
+inline const char *arg_check(lua_State *lua, int index) {
+  return luaL_checkstring(lua, index);
+}
+
+template <typename T, match_arg_string<T> *& = enabler>
+inline std::string arg_check(lua_State *lua, int index) {
   return luaL_checkstring(lua, index);
 }
 }}

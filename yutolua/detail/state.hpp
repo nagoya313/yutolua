@@ -1,5 +1,5 @@
-#ifndef YUTOLUA_DETAIL_CLOSE_HPP_
-#define YUTOLUA_DETAIL_CLOSE_HPP_
+#ifndef YUTOLUA_DETAIL_STATE_HPP_
+#define YUTOLUA_DETAIL_STATE_HPP_
 
 namespace yutolua { namespace detail {
 struct close {
