@@ -3,8 +3,6 @@
 #include <cstddef>
 #include <string>
 #include <type_traits>
-#include "../exception.hpp"
-#include "result_size.hpp"
 
 namespace yutolua { namespace detail {
 extern void *enabler;
@@ -60,36 +58,6 @@ struct is_comvertible_function_ptr : std::is_convertible<T, typename convert_fun
 
 template <typename T>
 using match_comvertible_function_ptr = std::enable_if_t<is_comvertible_function_ptr<T>::value>;
-
-template <typename Function>
-int call_function(lua_State *) {
-  //auto c = static_cast<Function **>(luaL_checkudata(lua, 1, lua_tostring(lua, lua_upvalueindex(1))));
-  //const auto ptr = reinterpret_cast<void (*)(Args...)>(lua_tocfunction(lua, lua_upvalueindex(1)));
-  //push(lua, c_function_call<void (*)(Args...), Args...>(lua, ptr));
-  return result_size<typename Function::result_type>::value;
-}
-
-template <typename Function>
-int delete_function(lua_State *lua) {
-  auto c = static_cast<Function **>(luaL_checkudata(lua, 1, lua_tostring(lua, lua_upvalueindex(1))));
-  delete *c;
-  return 0;
-}
-
-template <typename Function>
-inline void new_function(lua_State *lua, boost::string_ref identify, Function func) {
-  auto new_func = static_cast<Function **>(lua_newuserdata(lua, sizeof(Function *)));
-  *new_func = new Function{func};
-  const std::string tambel_name = "yutolua.function" + identify.to_string();
-  luaL_newmetatable(lua, tambel_name.c_str());
-  lua_pushfstring(lua, tambel_name.c_str());
-  lua_pushcclosure(lua, call_function<Function>, 1);
-  lua_setfield(lua, -2, "__call");
-  lua_pushfstring(lua, tambel_name.c_str());
-  lua_pushcclosure(lua, delete_function<Function>, 1);
-  lua_setfield(lua, -2, "__gc");
-  lua_setmetatable(lua, -2);
-}
 }}
 
 #endif

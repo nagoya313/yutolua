@@ -4,7 +4,7 @@
 #include <boost/utility/string_ref.hpp>
 #include "object.hpp"
 #include "state.hpp"
-#include "detail/c_function.hpp"
+#include "detail/function_call.hpp"
 #include "detail/type_check.hpp"
 
 namespace yutolua {
@@ -20,7 +20,7 @@ struct globals {
   template <typename Result, typename... Args>
   void def(boost::string_ref identify, Result (*func)(Args...)) {
     lua_pushcfunction(lua_, reinterpret_cast<lua_CFunction>(func));
-    lua_pushcclosure(lua_, detail::c_function<Result (Args...)>::call, 1);
+    lua_pushcclosure(lua_, detail::c_function_call<Result, Args...>, 1);
     lua_setglobal(lua_, identify.data());
   }
 
@@ -31,7 +31,7 @@ struct globals {
 
   template <typename Result, typename... Args>
   void def(boost::string_ref identify, std::function<Result (Args...)> func) {
-    detail::new_function(lua_, identify, func);
+    detail::cpp_function_new(lua_, func);
     lua_setglobal(lua_, identify.data());
   }
 
